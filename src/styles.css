@@ -197,6 +197,95 @@ textarea { padding: 11px; line-height: 1.65; }
 .complete-dot { width: 9px; height: 9px; border: 1px solid var(--muted); border-radius: 50%; }
 .complete-dot.done { border-color: var(--green-2); background: var(--green-2); }
 
+.strategy-page { padding-bottom: 8px; }
+.strategy-hero {
+  padding: 22px 18px;
+  border-radius: var(--radius);
+  background: var(--green);
+  color: white;
+}
+.strategy-hero .eyebrow { color: var(--yellow); }
+.strategy-hero h2 { margin: 4px 0 8px; font-size: 24px; line-height: 1.18; }
+.strategy-hero p { margin: 0; color: rgba(255,255,255,.82); font-size: 13px; line-height: 1.7; }
+.strategy-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  overflow: hidden;
+  margin-top: 18px;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 8px;
+  background: rgba(255,255,255,.18);
+}
+.strategy-metrics div { min-width: 0; padding: 12px 8px; background: rgba(255,255,255,.08); text-align: center; }
+.strategy-metrics span { display: block; color: rgba(255,255,255,.72); font-size: 10px; }
+.strategy-metrics strong { display: block; margin-top: 4px; color: white; font-size: 16px; }
+.strategy-table { display: grid; gap: 8px; }
+.strategy-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 10px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfa;
+}
+.strategy-row strong { min-width: 0; font-size: 13px; }
+.strategy-row span { color: var(--green-2); font-size: 12px; font-weight: 800; white-space: nowrap; }
+.strategy-row p { grid-column: 1 / -1; margin: 0; color: var(--muted); font-size: 12px; line-height: 1.55; }
+.minimum-grid, .target-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+}
+.minimum-grid div, .target-grid div {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfa;
+}
+.minimum-grid span, .target-grid span {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+}
+.minimum-grid strong, .target-grid strong {
+  display: block;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.roadmap-list { display: grid; gap: 10px; }
+.roadmap-card {
+  padding: 13px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfa;
+}
+.roadmap-card-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 10px;
+}
+.roadmap-card-head span {
+  padding: 5px 7px;
+  border-radius: 6px;
+  background: #e9f1ed;
+  color: var(--green-2);
+  font-size: 11px;
+  font-weight: 800;
+}
+.roadmap-card-head strong { min-width: 0; font-size: 14px; line-height: 1.35; }
+.roadmap-card dl { display: grid; gap: 6px; margin: 0; }
+.roadmap-card dt { color: var(--green-2); font-size: 11px; font-weight: 800; }
+.roadmap-card dd { margin: 0 0 4px; color: var(--muted); font-size: 12px; line-height: 1.65; }
+.review-prompts ol { margin: 0; padding-left: 22px; color: var(--muted); font-size: 13px; line-height: 1.8; }
+
 .metrics-band {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -323,7 +412,7 @@ textarea { padding: 11px; line-height: 1.65; }
   width: min(100%, 920px);
   transform: translateX(-50%);
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
   border-top: 1px solid var(--line);
   background: rgba(255,255,255,.96);
@@ -360,6 +449,8 @@ textarea { padding: 11px; line-height: 1.65; }
 @media (max-width: 480px) {
   .organized-grid, .review-questions { grid-template-columns: 1fr; }
   .organized-unclassified, .review-questions .field:last-child { grid-column: auto; }
+  .strategy-hero h2 { font-size: 22px; }
+  .minimum-grid, .target-grid { grid-template-columns: 1fr; }
   .task-item { grid-template-columns: 30px minmax(0, 1fr) auto; }
   .task-item .icon-button.subtle { display: none; }
   .task-meta span:nth-child(2) { display: none; }
