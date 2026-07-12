@@ -23,6 +23,20 @@ import { useAppData } from "./hooks/useAppData";
 import { clearAllData, createBackup, restoreBackup, validateBackup } from "./lib/backup";
 import { getWeekStart, nextWeekDate, shiftWeek, toDateKey } from "./lib/dates";
 import { emptyOrganizedNotes, organizeText } from "./lib/organize";
+import {
+  buildWeeklyFocusSuggestions,
+  dailyMinimums,
+  getDailySprintActions,
+  getSprintMonth,
+  monthlyReviewQuestions,
+  roadmap2026,
+  roadmap2027,
+  sprintContextText,
+  sprintReviewFields,
+  weeklyExecution,
+  type RoadmapItem,
+  type SuggestedTask
+} from "./lib/sprint";
 import { buildWeeklySnapshot, formatDuration, secondsForTask } from "./lib/stats";
 import type { OrganizedNotes, ReviewAnswers, Task, TimeEntry, WeekPlan } from "./types";
 import { DayStrip } from "./components/DayStrip";
@@ -50,54 +64,6 @@ const categoryLabels: Record<keyof OrganizedNotes, string> = {
   unclassified: "待整理"
 };
 
-const weeklyExecution = [
-  { time: "周一至周五上午", effort: "1h/天", task: "紫微输入：星曜、宫位、流年、大运、案例笔记" },
-  { time: "周一至周五下午/晚上", effort: "2h/天", task: "看盘、复盘、邀约、内容、客户沟通" },
-  { time: "周六", effort: "6h", task: "集中咨询、案例整理、内容批量制作" },
-  { time: "周日", effort: "6h", task: "周复盘、下周任务、AI 视频实验、生活收口" }
-];
-
-const dailyMinimums = [
-  { module: "紫微输入", action: "1 个知识点 + 1 条案例笔记" },
-  { module: "紫微输出", action: "1 次看盘/复盘/邀约/内容输出" },
-  { module: "AI 流量", action: "每周 2-3 条 AI 视频实验" },
-  { module: "生活状态", action: "护肤 + 10 分钟房间收口" }
-];
-
-const roadmap2026 = [
-  { month: "2026-07", goal: "稳住能力，开始样本盘", tasks: "每天上午补紫微基础；完成 6-8 个免费/低价样本盘；建立看盘模板；列出 20 个可邀约对象", checks: "1 套看盘提纲；至少 6 个案例记录；发出第一批邀约" },
-  { month: "2026-08", goal: "开始收费验证", tasks: "推出 99-199 元体验咨询；每周 2 条紫微内容；每周 2 条 AI 视频；完成熟人付费转化", checks: "3-5 个付费单；副业收入 500-1000；知道客户最常问什么" },
-  { month: "2026-09", goal: "固定咨询 SOP", tasks: "固定预约问题、看盘结构、交付总结、复盘表；开始整理客户反馈；内容加入咨询入口", checks: "累计 10 个付费单；副业收入 1000-2000；有标准服务说明" },
-  { month: "2026-10", goal: "提价与陌生线索", tasks: "标准咨询提到 199-399；每周 3 条紫微内容；AI 视频保留播放较好的方向", checks: "单月收入 2000-3000；至少 5 个陌生/半熟人咨询线索" },
-  { month: "2026-11", goal: "打磨转介绍", tasks: "做 3 个代表案例；邀请老客户反馈和转介绍；测试 399-699 深度咨询", checks: "单月收入 3000-5000；出现复购或转介绍" },
-  { month: "2026-12", goal: "年底冲刺复盘", tasks: "集中成交；复盘全年案例、收入、内容、AI 流量；制定 2027 产品价格表", checks: "单月收入 5000+；累计 20+ 付费单；形成 2027 服务矩阵" }
-];
-
-const roadmap2027 = [
-  { month: "2027-01", goal: "服务矩阵上线", tasks: "明确三类产品：文字简析、标准咨询、深度咨询；统一价格和交付", checks: "单月收入 5000+；客户知道怎么买" },
-  { month: "2027-02", goal: "内容获客稳定", tasks: "固定一个主平台；紫微内容每周 3 条；AI 视频每周 2-3 条", checks: "每月 10+ 咨询线索" },
-  { month: "2027-03", goal: "高价服务测试", tasks: "标准咨询稳定 399-699；深度咨询测试 999+", checks: "单月收入 8000+；至少 1 单高价" },
-  { month: "2027-04", goal: "案例库成型", tasks: "整理职业、感情、流年、性格四类案例；内容围绕案例输出", checks: "30 个可复用案例；转化率提升" },
-  { month: "2027-05", goal: "AI 提效内容", tasks: "用 AI 做选题、脚本、标题、视频生成；保留能带线索的内容形式", checks: "每周稳定发布 5 条内容" },
-  { month: "2027-06", goal: "半年复盘与加速", tasks: "复盘成交来源；砍掉无效 AI 视频方向；提高咨询价格或套餐", checks: "单月收入 10000+" },
-  { month: "2027-07", goal: "陌生客户主导", tasks: "从熟人市场转向陌生客户；内容入口、私信话术、咨询表单固定", checks: "陌生客户占比超过 50%" },
-  { month: "2027-08", goal: "长期服务测试", tasks: "推出年度流年/职业规划、季度陪伴或复盘服务", checks: "至少 2 个长期服务客户" },
-  { month: "2027-09", goal: "个人方法论成型", tasks: "紫微 + MBTI + 易经 + AI 整合成解释框架，只保留案例验证过的部分", checks: "能清楚讲出你的差异化" },
-  { month: "2027-10", goal: "月入 15000 冲刺", tasks: "提高高价服务比例；减少低价消耗型订单；集中做转介绍", checks: "单月收入 15000+" },
-  { month: "2027-11", goal: "月入 20000 测试", tasks: "组合咨询、年度服务、复购转介绍；内容强转化", checks: "单月冲击 20000" },
-  { month: "2027-12", goal: "第二年总复盘", tasks: "复盘收入、客户、内容、AI、时间投入、生活状态；判断 2028 是否主业降权", checks: "单月收入 20000+ 或找到明确差距" }
-];
-
-const monthlyReviewQuestions = [
-  "本月收入是多少？距离目标差多少？",
-  "本月付费订单几个？线索从哪里来？",
-  "上午输入有没有让看盘更稳？",
-  "下午输出是否真的产生了案例、内容、邀约、成交？",
-  "AI 视频有没有带来播放、关注、私信或咨询？",
-  "是能力不够、获客不够，还是不敢收费？",
-  "下个月只保留哪 3 个重点？"
-];
-
 function App() {
   const [view, setView] = useState<View>("plan");
   const [weekStart, setWeekStart] = useState(getWeekStart(new Date()));
@@ -118,6 +84,7 @@ function App() {
   }, [data.tasks]);
   const selectedTasks = data.tasks.filter((task) => task.date === selectedDate);
   const activeTask = data.tasks.find((task) => task.id === data.activeTimer?.taskId);
+  const sprintMonth = getSprintMonth(selectedDate);
 
   const notify = (message: string) => {
     setToast(message);
@@ -159,6 +126,28 @@ function App() {
     setEditingTask(undefined);
     await data.refresh();
     notify(editingTask ? "任务已更新" : "任务已加入今天");
+  };
+
+  const addSuggestedTasks = async (suggestions: SuggestedTask[]) => {
+    const existingTitles = new Set(
+      data.tasks
+        .filter((task) => task.date === selectedDate)
+        .map((task) => task.title.trim())
+    );
+    const uniqueSuggestions = suggestions.filter((task) => !existingTitles.has(task.title.trim()));
+    if (!uniqueSuggestions.length) {
+      notify("今天的冲刺任务已经在清单里");
+      return;
+    }
+    await db.tasks.bulkAdd(uniqueSuggestions.map((task) => ({
+      ...task,
+      status: "open" as const,
+      completedAt: null,
+      createdAt: new Date().toISOString()
+    })));
+    await data.refresh();
+    const skipped = suggestions.length - uniqueSuggestions.length;
+    notify(skipped ? `已加入 ${uniqueSuggestions.length} 个，跳过 ${skipped} 个重复任务` : `已加入 ${uniqueSuggestions.length} 个冲刺任务`);
   };
 
   const deleteTask = async () => {
@@ -293,6 +282,7 @@ function App() {
           <PlanView
             weekPlan={data.weekPlan}
             selectedDate={selectedDate}
+            sprintMonth={sprintMonth}
             dailyLog={data.dailyLogs.find((log) => log.date === selectedDate)}
             tasks={selectedTasks}
             entries={data.timeEntries}
@@ -312,6 +302,9 @@ function App() {
             focuses={focuses}
             entries={data.timeEntries}
             activeTaskId={data.activeTimer?.taskId}
+            selectedDate={selectedDate}
+            sprintMonth={sprintMonth}
+            onAddSuggestedTasks={addSuggestedTasks}
             onNew={() => {
               setEditingTask(undefined);
               setTaskDialogOpen(true);
@@ -328,6 +321,8 @@ function App() {
         {!data.loading && view === "review" ? (
           <ReviewView
             weekStart={weekStart}
+            selectedDate={selectedDate}
+            sprintMonth={sprintMonth}
             plan={data.weekPlan}
             tasks={data.tasks}
             entries={data.timeEntries}
@@ -507,6 +502,7 @@ function RoadmapSection({ title, eyebrow, items }: { title: string; eyebrow: str
 interface PlanViewProps {
   weekPlan?: WeekPlan;
   selectedDate: string;
+  sprintMonth: RoadmapItem;
   dailyLog?: { id?: number; date: string; rawNote: string; organized: OrganizedNotes; updatedAt: string };
   tasks: Task[];
   entries: TimeEntry[];
@@ -516,7 +512,7 @@ interface PlanViewProps {
   onNewTask: () => void;
 }
 
-function PlanView({ weekPlan, selectedDate, dailyLog, tasks, entries, onSaveWeek, onRefresh, notify, onNewTask }: PlanViewProps) {
+function PlanView({ weekPlan, selectedDate, sprintMonth, dailyLog, tasks, entries, onSaveWeek, onRefresh, notify, onNewTask }: PlanViewProps) {
   const [focuses, setFocuses] = useState(weekPlan?.focuses ?? []);
   const [rawNote, setRawNote] = useState(dailyLog?.rawNote ?? "");
   const [organized, setOrganized] = useState(dailyLog?.organized ?? emptyOrganizedNotes());
@@ -534,6 +530,13 @@ function PlanView({ weekPlan, selectedDate, dailyLog, tasks, entries, onSaveWeek
     const next = [...focuses];
     next[index] = value;
     setFocuses(next);
+  };
+
+  const applySprintFocuses = () => {
+    const suggestions = buildWeeklyFocusSuggestions();
+    if (!window.confirm(`把本周重点预填为：\n${suggestions.map((item, index) => `${index + 1}. ${item}`).join("\n")}`)) return;
+    setFocuses(suggestions);
+    notify("已预填冲刺重点，记得保存");
   };
 
   const saveLog = async () => {
@@ -558,22 +561,41 @@ function PlanView({ weekPlan, selectedDate, dailyLog, tasks, entries, onSaveWeek
     const summary = (Object.keys(organized) as (keyof OrganizedNotes)[])
       .map((key) => `${categoryLabels[key]}：\n${organized[key].map((item) => `- ${item}`).join("\n") || "- 暂无"}`)
       .join("\n\n");
-    const prompt = `你是我的个人 DSTE 教练。请把以下口语记录整理成简洁、可执行的中文要点。保留事实，不臆测；指出明显矛盾，并给出一周内能发生的下一步。输出：判断、计划、收获、阻碍、下一步。\n\n本周重点：${focuses.filter(Boolean).join("；") || "未设置"}\n\n今天任务：\n${taskLines}\n\n原始记录：\n${rawNote}\n\n本地初步整理：\n${summary}`;
+    const prompt = `你是我的个人 DSTE 教练。请把以下口语记录整理成简洁、可执行的中文要点。保留事实，不臆测；指出明显矛盾，并给出一周内能发生的下一步。输出：判断、计划、收获、阻碍、下一步。\n\n${sprintContextText(sprintMonth)}\n\n本周重点：${focuses.filter(Boolean).join("；") || "未设置"}\n\n今天任务：\n${taskLines}\n\n原始记录：\n${rawNote}\n\n本地初步整理：\n${summary}`;
     await navigator.clipboard.writeText(prompt);
     notify("已复制，可粘贴给 ChatGPT");
   };
 
   return (
     <div className="content-stack">
+      <section className="section-block sprint-month-card">
+        <div className="section-heading">
+          <div>
+            <span className="eyebrow">{sprintMonth.month} 冲刺</span>
+            <h2>{sprintMonth.goal}</h2>
+          </div>
+          <Target size={22} />
+        </div>
+        <div className="sprint-card-grid">
+          <div><span>关键任务</span><p>{sprintMonth.tasks}</p></div>
+          <div><span>验收标准</span><p>{sprintMonth.checks}</p></div>
+        </div>
+      </section>
+
       <section className="section-block">
         <div className="section-heading">
           <div>
             <span className="eyebrow">本周战略</span>
             <h2>最多三个重点</h2>
           </div>
-          <button className="text-button" onClick={() => onSaveWeek({ focuses: focuses.map((item) => item.trim()).filter(Boolean).slice(0, 3) })}>
-            <Save size={16} /> 保存
-          </button>
+          <div className="heading-actions">
+            <button className="text-button" onClick={applySprintFocuses}>
+              <Target size={16} /> 套用冲刺
+            </button>
+            <button className="text-button" onClick={() => onSaveWeek({ focuses: focuses.map((item) => item.trim()).filter(Boolean).slice(0, 3) })}>
+              <Save size={16} /> 保存
+            </button>
+          </div>
         </div>
         <div className="focus-list">
           {[0, 1, 2].map((index) => (
@@ -640,14 +662,27 @@ interface TasksViewProps {
   focuses: string[];
   entries: TimeEntry[];
   activeTaskId?: number;
+  selectedDate: string;
+  sprintMonth: RoadmapItem;
+  onAddSuggestedTasks: (suggestions: SuggestedTask[]) => Promise<void>;
   onNew: () => void;
   onToggle: (task: Task) => void;
   onStart: (task: Task) => void;
   onEdit: (task: Task) => void;
 }
 
-function TasksView({ tasks, focuses, entries, activeTaskId, onNew, onToggle, onStart, onEdit }: TasksViewProps) {
+function TasksView({ tasks, focuses, entries, activeTaskId, selectedDate, sprintMonth, onAddSuggestedTasks, onNew, onToggle, onStart, onEdit }: TasksViewProps) {
   const totalSeconds = entries.reduce((sum, entry) => sum + entry.seconds, 0);
+  const suggestions = getDailySprintActions(selectedDate);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const existingTitles = new Set(tasks.map((task) => task.title.trim()));
+  const newSuggestions = suggestions.filter((task) => !existingTitles.has(task.title.trim()));
+
+  const confirmSuggestions = async () => {
+    await onAddSuggestedTasks(suggestions);
+    setPreviewOpen(false);
+  };
+
   return (
     <div className="content-stack">
       <section className="metrics-band">
@@ -655,6 +690,28 @@ function TasksView({ tasks, focuses, entries, activeTaskId, onNew, onToggle, onS
         <div><span>投入</span><strong>{formatDuration(totalSeconds)}</strong></div>
         <div><span>待办</span><strong>{tasks.filter((task) => task.status === "open").length}</strong></div>
       </section>
+
+      <section className="section-block sprint-action-card">
+        <div className="section-heading">
+          <div>
+            <span className="eyebrow">今日冲刺动作</span>
+            <h2>{sprintMonth.goal}</h2>
+          </div>
+          <button className="primary-button compact" onClick={() => setPreviewOpen(true)}>
+            <Plus size={17} /> 生成今日任务
+          </button>
+        </div>
+        <div className="suggestion-list">
+          {suggestions.map((task) => (
+            <div className={existingTitles.has(task.title.trim()) ? "suggestion-item muted" : "suggestion-item"} key={task.title}>
+              <strong>{task.title}</strong>
+              <span>{task.estimateMinutes} 分钟</span>
+            </div>
+          ))}
+        </div>
+        <p className="sprint-note">已存在的同名任务会自动跳过，不会重复塞进清单。</p>
+      </section>
+
       <section className="section-block task-section">
         <div className="section-heading">
           <div>
@@ -684,12 +741,43 @@ function TasksView({ tasks, focuses, entries, activeTaskId, onNew, onToggle, onS
           )}
         </div>
       </section>
+
+      {previewOpen ? (
+        <div className="dialog-backdrop" onMouseDown={() => setPreviewOpen(false)}>
+          <section className="dialog" role="dialog" aria-modal="true" aria-label="生成今日冲刺任务" onMouseDown={(event) => event.stopPropagation()}>
+            <div className="dialog-header">
+              <div>
+                <span className="eyebrow">任务预览</span>
+                <h2>确认加入今天</h2>
+              </div>
+              <button className="icon-button subtle" onClick={() => setPreviewOpen(false)} aria-label="关闭">×</button>
+            </div>
+            <div className="preview-list">
+              {suggestions.map((task) => (
+                <div className={existingTitles.has(task.title.trim()) ? "preview-task skipped" : "preview-task"} key={task.title}>
+                  <strong>{task.title}</strong>
+                  <span>{task.estimateMinutes} 分钟 · {task.focusIndex === null ? "不关联重点" : `重点 ${task.focusIndex + 1}`}</span>
+                  {existingTitles.has(task.title.trim()) ? <small>已存在，将跳过</small> : null}
+                </div>
+              ))}
+            </div>
+            <div className="dialog-footer">
+              <button className="secondary-button" onClick={() => setPreviewOpen(false)}>取消</button>
+              <button className="primary-button" disabled={!newSuggestions.length} onClick={confirmSuggestions}>
+                加入 {newSuggestions.length} 个任务
+              </button>
+            </div>
+          </section>
+        </div>
+      ) : null}
     </div>
   );
 }
 
 interface ReviewViewProps {
   weekStart: string;
+  selectedDate: string;
+  sprintMonth: RoadmapItem;
   plan?: WeekPlan;
   tasks: Task[];
   entries: TimeEntry[];
@@ -700,15 +788,32 @@ interface ReviewViewProps {
   onRollover: (mode: "keep" | "move" | "delete") => Promise<void>;
 }
 
-function ReviewView({ weekStart, plan, tasks, entries, wins, savedReview, history, onSaved, onRollover }: ReviewViewProps) {
+function ReviewView({ weekStart, selectedDate, sprintMonth, plan, tasks, entries, wins, savedReview, history, onSaved, onRollover }: ReviewViewProps) {
   const snapshot = buildWeeklySnapshot(tasks, entries, plan, wins);
   const [answers, setAnswers] = useState(savedReview?.answers ?? emptyAnswers);
+  const [sprintAnswers, setSprintAnswers] = useState<Record<(typeof sprintReviewFields)[number]["key"], string>>({
+    income: "",
+    orders: "",
+    leads: "",
+    content: "",
+    input: "",
+    output: ""
+  });
   const [report, setReport] = useState(savedReview?.report ?? "");
   const [nextFocuses, setNextFocuses] = useState(savedReview?.nextFocuses ?? []);
+  const dailyActions = getDailySprintActions(selectedDate);
 
   const reviewKey = savedReview?.updatedAt ?? weekStart;
   useEffect(() => {
     setAnswers(savedReview?.answers ?? emptyAnswers);
+    setSprintAnswers({
+      income: "",
+      orders: "",
+      leads: "",
+      content: "",
+      input: "",
+      output: ""
+    });
     setReport(savedReview?.report ?? "");
     setNextFocuses(savedReview?.nextFocuses ?? []);
   }, [reviewKey]);
@@ -716,6 +821,8 @@ function ReviewView({ weekStart, plan, tasks, entries, wins, savedReview, histor
   const generateReport = () => {
     setReport(
       `本周共安排 ${snapshot.totalTasks} 项任务，完成 ${snapshot.completedTasks} 项，完成率 ${snapshot.completionRate}%。实际投入 ${formatDuration(snapshot.totalSeconds)}。\n\n` +
+      `本月冲刺：${sprintMonth.month} ${sprintMonth.goal}\n验收标准：${sprintMonth.checks}\n\n` +
+      `冲刺指标：\n收入：${sprintAnswers.income || "待补充"}\n付费订单：${sprintAnswers.orders || "待补充"}\n咨询线索：${sprintAnswers.leads || "待补充"}\n内容数量：${sprintAnswers.content || "待补充"}\n输入稳定性：${sprintAnswers.input || "待补充"}\n输出成交证据：${sprintAnswers.output || "待补充"}\n\n` +
       `目标进展：${answers.progress || "待补充"}\n完成证据：${answers.evidence || "待补充"}\n时间判断：${answers.timeReflection || "待补充"}\n偏差原因：${answers.deviation || "待补充"}\n下周调整：${answers.adjustment || "待补充"}`
     );
   };
@@ -749,6 +856,33 @@ function ReviewView({ weekStart, plan, tasks, entries, wins, savedReview, histor
         <div><span>总投入</span><strong>{formatDuration(snapshot.totalSeconds)}</strong></div>
       </section>
 
+      <section className="section-block sprint-review-card">
+        <div className="section-heading">
+          <div>
+            <span className="eyebrow">{sprintMonth.month} 冲刺复盘</span>
+            <h2>{sprintMonth.goal}</h2>
+          </div>
+          <Target size={22} />
+        </div>
+        <div className="sprint-card-grid">
+          <div><span>本月验收</span><p>{sprintMonth.checks}</p></div>
+          <div><span>今日动作参考</span><p>{dailyActions.map((task) => task.title).join("；")}</p></div>
+        </div>
+        <div className="review-questions sprint-review-fields">
+          {sprintReviewFields.map(({ key, label, placeholder }) => (
+            <label className="field" key={key}>
+              <span>{label}</span>
+              <textarea
+                rows={3}
+                value={sprintAnswers[key]}
+                placeholder={placeholder}
+                onChange={(event) => setSprintAnswers({ ...sprintAnswers, [key]: event.target.value })}
+              />
+            </label>
+          ))}
+        </div>
+      </section>
+
       <section className="section-block">
         <div className="section-heading">
           <div><span className="eyebrow">DSTE 复盘</span><h2>从结果校准下一周</h2></div>
@@ -768,7 +902,7 @@ function ReviewView({ weekStart, plan, tasks, entries, wins, savedReview, histor
           <textarea rows={8} value={report} onChange={(event) => setReport(event.target.value)} placeholder="完成上面的追问后生成周报" />
         </label>
         <div className="next-focuses">
-          <span>下周最多三个重点</span>
+          <span>下周最多三个重点 · 对齐 {sprintMonth.month} 验收：{sprintMonth.checks}</span>
           {[0, 1, 2].map((index) => (
             <input key={index} value={nextFocuses[index] ?? ""} placeholder={`重点 ${index + 1}`} onChange={(event) => {
               const next = [...nextFocuses];

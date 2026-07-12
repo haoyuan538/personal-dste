@@ -124,6 +124,7 @@ main { padding: 0 16px; }
 .section-heading h2 { margin: 2px 0 0; font-size: 17px; line-height: 1.3; }
 .eyebrow { color: var(--green-2); font-size: 11px; font-weight: 700; }
 .privacy-label { padding: 4px 7px; border-radius: 5px; background: #e9f1ed; color: var(--green-2); font-size: 10px; }
+.heading-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
 .text-button {
   display: inline-flex;
   align-items: center;
@@ -197,6 +198,44 @@ textarea { padding: 11px; line-height: 1.65; }
 .complete-dot { width: 9px; height: 9px; border: 1px solid var(--muted); border-radius: 50%; }
 .complete-dot.done { border-color: var(--green-2); background: var(--green-2); }
 
+.sprint-month-card, .sprint-action-card, .sprint-review-card { border-color: #cfded7; background: #fbfdfb; }
+.sprint-card-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+}
+.sprint-card-grid div {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #dce8e1;
+  border-radius: 8px;
+  background: #f4f8f5;
+}
+.sprint-card-grid span {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--green-2);
+  font-size: 10px;
+  font-weight: 800;
+}
+.sprint-card-grid p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.65; }
+.suggestion-list, .preview-list { display: grid; gap: 8px; }
+.suggestion-item, .preview-task {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 10px;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+}
+.suggestion-item strong, .preview-task strong { min-width: 0; font-size: 13px; line-height: 1.4; }
+.suggestion-item span, .preview-task span { color: var(--green-2); font-size: 11px; font-weight: 800; white-space: nowrap; }
+.suggestion-item.muted, .preview-task.skipped { opacity: .58; }
+.preview-task small { grid-column: 1 / -1; color: var(--coral); font-size: 11px; }
+.sprint-note { margin: 10px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55; }
+.sprint-review-fields { margin-top: 14px; }
 .strategy-page { padding-bottom: 8px; }
 .strategy-hero {
   padding: 22px 18px;
@@ -449,8 +488,11 @@ textarea { padding: 11px; line-height: 1.65; }
 @media (max-width: 480px) {
   .organized-grid, .review-questions { grid-template-columns: 1fr; }
   .organized-unclassified, .review-questions .field:last-child { grid-column: auto; }
+  .heading-actions { width: 100%; justify-content: flex-start; }
   .strategy-hero h2 { font-size: 22px; }
-  .minimum-grid, .target-grid { grid-template-columns: 1fr; }
+  .minimum-grid, .target-grid, .sprint-card-grid { grid-template-columns: 1fr; }
+  .suggestion-item, .preview-task { grid-template-columns: 1fr; }
+  .suggestion-item span, .preview-task span { white-space: normal; }
   .task-item { grid-template-columns: 30px minmax(0, 1fr) auto; }
   .task-item .icon-button.subtle { display: none; }
   .task-meta span:nth-child(2) { display: none; }
